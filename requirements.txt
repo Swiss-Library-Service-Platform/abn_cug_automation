@@ -1,0 +1,7 @@
+pandas
+python-dotenv
+gitpython
+cryptography
+almapiwrapper
+lxml
+requests
