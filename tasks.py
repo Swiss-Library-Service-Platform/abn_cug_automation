@@ -75,17 +75,17 @@ from update_cug.gitrepo import GitRepo
 
 from update_cug import update_mediotheken, update_verwaltung
 
-# Load environment variables with secrets to
-# access the git repository and to decrypt the data
-dotenv.load_dotenv()
-os.environ['GIT_SSL_NO_VERIFY'] = 'true'
-
 # Set current active directory to the script directory
 os.chdir(
     os.path.dirname(
         os.path.abspath(__file__)
     )
 )
+
+# Load environment variables with secrets to
+# access the git repository and to decrypt the data
+dotenv.load_dotenv()
+os.environ['GIT_SSL_NO_VERIFY'] = 'true'
 
 repo = GitRepo(
     local_path=config.REPOSITORY_PATH,

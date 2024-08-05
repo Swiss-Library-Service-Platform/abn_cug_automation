@@ -1,7 +1,7 @@
 # CUG automation abn
 * Author: Raphaël Rey (raphael.rey@slsp.ch)
 * Date: 2024-07-01
-* Version: 1.0.0
+* Version: 1.0.1
 
 ## Description
 This application is used to update the CUGs in Alma of ABN IZ.
