@@ -206,9 +206,9 @@ def clean_current_state_table_col_types(df_current_state: pd.DataFrame) -> pd.Da
         Current state data
     """
     df_current_state['birth_date'] = pd.to_datetime(df_current_state['birth_date'])
-    df_current_state['barcode_added'] = df_current_state['barcode_added'].astype(bool).fillna(False)
-    df_current_state['cug_updated'] = df_current_state['cug_updated'].astype(bool).fillna(False)
-    df_current_state['skipped'] = df_current_state['skipped'].astype(bool).fillna(False)
+    df_current_state['barcode_added'] = df_current_state['barcode_added'].fillna(False).astype(bool)
+    df_current_state['cug_updated'] = df_current_state['cug_updated'].fillna(False).astype(bool)
+    df_current_state['skipped'] = df_current_state['skipped'].fillna(False).astype(bool)
     df_current_state['message'] = df_current_state['message'].astype(str).replace('nan', '')
     df_current_state['barcode'] = df_current_state['barcode'].astype(str).replace('nan', '')
     return df_current_state

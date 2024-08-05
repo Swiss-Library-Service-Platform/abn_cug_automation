@@ -32,7 +32,12 @@ def fetch_analytics_report() -> List[str]:
     # A configured analytics read-only key is required
     report = AnalyticsReport(config.VERWALTUNG_ANALYTICS_REPORT_PATH,
                              config.IZ)
+
     data = report.data
+
+    # Avoid critical error if the report is not found
+    if report.error is True or data is None:
+        return []
 
     # Filter data, additional check, analytics report should already be filtered
     filtered_data = data.loc[~data['User Group Code'].isin([config.HFGS_USER_GROUP_CODE,
