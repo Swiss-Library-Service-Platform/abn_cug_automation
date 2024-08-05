@@ -13,7 +13,7 @@ def workflow() -> None:
     """
     df_source = tools.decrypt_data(config.PATH_TO_SOURCE_DATA)
     df_source.columns = ['last_name', 'first_name', 'birth_date', 'barcode']
-    df_source['birth_date'] = pd.to_datetime(df_source['birth_date'], format='%d.%m.%Y')
+    df_source['birth_date'] = pd.to_datetime(df_source['birth_date'], format='%Y-%m-%d')
     df_source['barcode'] = df_source['barcode'].astype(str).replace('nan', '')
 
     if os.path.isfile(config.PATH_TO_DATA_CURRENT_STATE) is True:
