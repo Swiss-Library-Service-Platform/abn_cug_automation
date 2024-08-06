@@ -48,6 +48,26 @@ def workflow() -> None:
     tools.encrypt_data(df_current_state, config.PATH_TO_DATA_CURRENT_STATE)
 
 
+def reset_current_state_table() -> None:
+    """This function is used to reset all flags of the current state table to False.
+
+    This script can be used in case of error in current state table.
+    """
+    df_source = tools.decrypt_data(config.PATH_TO_SOURCE_DATA)
+    df_source.columns = ['last_name', 'first_name', 'birth_date', 'barcode']
+    df_source['birth_date'] = pd.to_datetime(df_source['birth_date'], format='%Y-%m-%d')
+    df_source['barcode'] = df_source['barcode'].astype(str).replace('nan', '')
+
+    logging.info('Create a new current state table.')
+    df_current_state = create_current_state_df(df_source)
+
+    # Actualize the current state table
+    df_current_state = actualize_current_state_table(df_source, df_current_state)
+
+    # Save the current state table
+    tools.encrypt_data(df_current_state, config.PATH_TO_DATA_CURRENT_STATE)
+
+
 def create_current_state_df(df_source) -> pd.DataFrame:
     """If this file doesn't exist, it should be created
 
