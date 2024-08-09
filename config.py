@@ -22,3 +22,6 @@ REPOSITORY_TOKEN_KEY = 'rw_slsp_token'
 # Analytics report configuration
 VERWALTUNG_ANALYTICS_REPORT_PATH = ('/shared/Aargauer Kantonsbibliothek 41SLSP_ABN/Reports/'
                                     'SLSP_ABN_reports_on_request/CUG/Users_with_ag_ch_email_and_not_user_group')
+
+# Email configuration
+REPORT_DESTINATION = 'raphael.rey@slsp.ch'

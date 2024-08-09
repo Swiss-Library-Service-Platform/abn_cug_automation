@@ -27,46 +27,42 @@
 # Required:
 # ---------
 # List of users with following columns:
-# - Name
-# - Vorname
-# - Geb.-Datum
-# - E-Mail
-# - Strichcode
-# - Bibliothek
+# - Last Name
+# - First Name
+# - Birth Date
+# - Barcode
 #
 # Result list:
 # ------------
 # A list is produced with additional columns:
 # - primary_id: primary ID of alma user account
-# - updated: boolean indicating if the user have been processed
-# - nz_account_ok: boolean indicating indicating if the NZ account could be found
+# - barcode_added: boolean indicating if the user have been processed
+# - cug_updated: boolean indicating indicating if the NZ account could be found
 # - skpipped: user skipped in case of multimatches
+# - message: error message, empty if no error
 #
 # Workflow:
 # ---------
-# 1. Try to find each user in IZ with first name,
+# 1. Clone and decrypt ABN repository
+# 2. Try to find each user in IZ with first name,
 #    last name and birth date (skip already updated users and
 #    multi matches -> "skkiped" column True)
-# 4. Update the list with result of the process
-# 5. Fetch set of users with the CUG in IZ
-# 6. Compare the primary IDs with the list describing the current state
-# 7. Create an itemized set to add the CUG in IZ
+# 2. Update the user with the new CUG if a match is found
+# 3. Update the "Verwaltung" CUG using Analytics list
+# 4. Encrypt and push the data to the repository
 #
 # How to prevent processing one user?
 # -----------------------------------
-# - Option 1: remove the user of the list "HFGS_data/CUG_HFGS_current_state.csv"
-# - Option 2: set flag "skipped" to True
+# - Option 1: remove the user of the source list
+# - Option 2: update the source list and set the flag "skipped" to True
 #
 # CUG suppressing:
 # ----------------
 # NOT ACTIVE YET
 
-# Configuration
-
-
 # Import libraries
 import logging
-from datetime import date, datetime
+from datetime import datetime
 import os
 import dotenv
 import config
@@ -99,8 +95,10 @@ repo.clone_repo()
 log_file_path = tools.configure_logger()
 logging.info(f'Starting process at {datetime.now()}')
 
-update_mediotheken.workflow()
-update_verwaltung.workflow()
+# Update CUGs of users
+reports = list()
+reports.append(update_mediotheken.workflow())
+reports.append(update_verwaltung.workflow())
 
 logging.info(f'Process ended at {datetime.now()}')
 

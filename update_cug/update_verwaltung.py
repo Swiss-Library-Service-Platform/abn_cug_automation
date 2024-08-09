@@ -7,16 +7,23 @@ from almapiwrapper.users import User
 import config
 
 
-def workflow():
+def workflow() -> str:
     """
     Update the user group of users with an email address ending with 'ag.ch' and not already
     in the user group 'ABN_Patron-Kantonale-Verwaltung'
+
+    Returns
+    -------
+    str
+        string containing the report data
     """
     primary_ids = fetch_analytics_report()
 
     update_users(primary_ids)
 
-    write_report(primary_ids)
+    report = update_report(primary_ids)
+
+    return report
 
 
 def fetch_analytics_report() -> List[str]:
@@ -69,7 +76,7 @@ def update_users(primary_ids: List[str]):
         u.update(override=['user_group'])
 
 
-def write_report(primary_ids: List[str]):
+def update_report(primary_ids: List[str]) -> str:
     """
     Write the report of the process
 
@@ -77,6 +84,11 @@ def write_report(primary_ids: List[str]):
     ----------
     primary_ids: List[str]
         List of primary IDs of users to update
+
+    Returns
+    -------
+    str
+        string containing the report data
     """
 
     if os.path.isfile(config.PATH_TO_REPORT_VERWALTUNG):
@@ -90,3 +102,5 @@ def write_report(primary_ids: List[str]):
                        'nb_new_users': len(primary_ids)}
 
     df.to_csv(config.PATH_TO_REPORT_VERWALTUNG, index=False)
+
+    return df.tail(5).to_string(index=False)

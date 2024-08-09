@@ -6,6 +6,10 @@ import config
 from cryptography.fernet import Fernet
 import pandas as pd
 from io import BytesIO
+from typing import List
+
+# sendmail is a custom local package
+from sendmail import sendmail
 
 
 def configure_logger() -> str:
@@ -134,7 +138,6 @@ def encrypt_log_file(log_file_path: str) -> str:
 def strtodate(txt: str) -> datetime:
     """Convert date string to datetime format
 
-
     Parameters
     ----------
     txt: str
@@ -145,3 +148,20 @@ def strtodate(txt: str) -> datetime:
         txt converted into datetime format
     """
     return datetime.strptime(txt, '%Y-%m-%dZ')
+
+
+def send_report(reports: List[str]) -> None:
+    """Send an email with the report attached
+
+    Parameters
+    ----------
+    reports: List[str]
+        List of reports to send
+    """
+
+    reports = '\n\n****************\n\n'.join(reports)
+
+    # At least one user group updated
+    sendmail(config.REPORT_DESTINATION,
+             'ABN CUG processes report',
+             reports)

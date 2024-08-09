@@ -8,14 +8,28 @@ from almapiwrapper.users import fetch_users, User
 from typing import Optional
 
 
-def workflow() -> None:
-    """This function is the main workflow of the process to update the CUG of Mediotheken users.
+def workflow() -> str:
     """
+    This function is the main workflow of the process to update the CUG of Mediotheken users.
+
+    Returns
+    -------
+    str
+        string containing the report data
+    """
+
+    # Load source data
     df_source = tools.decrypt_data(config.PATH_TO_SOURCE_DATA)
+
+    # Rename the columns of the source data, order must be last_name, first_name, birth_date, barcode
     df_source.columns = ['last_name', 'first_name', 'birth_date', 'barcode']
     df_source['birth_date'] = pd.to_datetime(df_source['birth_date'], format='%Y-%m-%d')
+
+    # Since data is read as string. Not available values are read as 'nan' string
+    # => need to be replaced with empty string
     df_source['barcode'] = df_source['barcode'].astype(str).replace('nan', '')
 
+    # Check if current state table exists, if no a new one is created
     if os.path.isfile(config.PATH_TO_DATA_CURRENT_STATE) is True:
         df_current_state = tools.decrypt_data(config.PATH_TO_DATA_CURRENT_STATE)
         logging.info('Current state table loaded.')
@@ -23,16 +37,17 @@ def workflow() -> None:
         logging.warning('No current state table -> creating a new one.')
         df_current_state = create_current_state_df(df_source)
 
-    # Actualize the current state table
+    # Actualize the current state table, compare the current state with the source data
+    # If source data changed, the current state is also updated.
     df_current_state = actualize_current_state_table(df_source, df_current_state)
 
     # Iterate on each user
-    for i, row in df_current_state.iterrows():
+    for i, _ in df_current_state.iterrows():
 
-        # Check CUG
-        user = check_user_cug(i, row, df_current_state)
+        # Check CUG of the user
+        user = update_user_cug(i, df_current_state)
 
-        # Check barcode
+        # Check barcode for users, who have already the new CUG, but no barcode
         if not df_current_state.loc[i, 'barcode_added'] and df_current_state.loc[i, 'cug_updated']:
             if user is None:
                 user = User(df_current_state.loc[i, 'primary_id'], zone=config.IZ)
@@ -47,11 +62,13 @@ def workflow() -> None:
     # Save the current state table
     tools.encrypt_data(df_current_state, config.PATH_TO_DATA_CURRENT_STATE)
 
+    return df_current_state.tail(5).to_string(index=False)
+
 
 def reset_current_state_table() -> None:
     """This function is used to reset all flags of the current state table to False.
 
-    This script can be used in case of error in current state table.
+    This script can be used in case of error in the current state table.
     """
     df_source = tools.decrypt_data(config.PATH_TO_SOURCE_DATA)
     df_source.columns = ['last_name', 'first_name', 'birth_date', 'barcode']
@@ -87,7 +104,10 @@ def create_current_state_df(df_source) -> pd.DataFrame:
 
 
 def actualize_current_state_table(df_source: pd.DataFrame, df_current_state: pd.DataFrame) -> pd.DataFrame:
-    """This function actualize the current state table with the new data.
+    """This function actualize the current state table with the new data of source data.
+
+    The source data is master data. If a row doesn't exist in source data, it will be deleted
+    from current state data. New row from source data will be added to current state data.
 
     Parameters
     ----------
@@ -112,7 +132,7 @@ def actualize_current_state_table(df_source: pd.DataFrame, df_current_state: pd.
     return df_current_state
 
 
-def check_user_cug(i: int, row: pd.Series, df: pd.DataFrame) -> Optional[User]:
+def update_user_cug(i: int, df: pd.DataFrame) -> Optional[User]:
     """This function fetch user and update it in the NZ. It check also the IZ
     user to know if it has already the new user group.
 
@@ -120,53 +140,55 @@ def check_user_cug(i: int, row: pd.Series, df: pd.DataFrame) -> Optional[User]:
     ----------
     i: int
         Index of the user in the DataFrame
-    row: pd.Series
-        Row of the user in the DataFrame
+
     df: pd.DataFrame
         DataFrame containing the current state of the data from the last run.
     """
 
     # This user is already fully processed => skip it
-    if row['cug_updated']:
-        logging.info(f'{i + 1} / {len(df)}: SKIPPED {row["barcode"]}')
+    if df.loc[i, 'cug_updated']:
+        logging.info(f'{i + 1} / {len(df)}: SKIPPED {df.loc[i, "barcode"]}')
         return
 
     df.loc[i, 'message'] = ''
-    logging.info(f'{i + 1} / {len(df)}: handling {row["barcode"]}')
+    logging.info(f'{i + 1} / {len(df)}: handling {df.loc[i, "barcode"]}')
 
     # Fetch users by name
     users = [u for u in
-             fetch_users(f'last_name~{row["last_name"].replace(" ", "_")} and first_name~{row["first_name"].replace(" ", "_")}',
-                     zone=config.IZ)
+             fetch_users(f'last_name~{df.loc[i, "last_name"].replace(" ", "_")} '
+                         f'and first_name~{df.loc[i, "first_name"].replace(" ", "_")}',
+                         zone=config.IZ)
              if u.primary_id.endswith('eduid.ch')]
 
     if len(users) == 0:
-        logging.warning(f'No match found with name {row["last_name"]}, {row["first_name"]}')
+        logging.warning(f'No match found with name {df.loc[i, "last_name"]}, {df.loc[i, "first_name"]}')
         return
 
     # Filter with birth date
-    users_found = [u for u in users if row['birth_date'] == tools.strtodate(u.data['birth_date'])]
+    users_found = [u for u in users if df.loc[i, 'birth_date'] == tools.strtodate(u.data['birth_date'])]
 
     # Multi matches case
     if len(users_found) > 1:
         logging.error(
-            f'Several accounts with same name and same birth date ({row["Name"]}, {row["Vorname"]}), probably duplicated accounts => SKIPPED: {", ".join([u.primary_id for u in users_found])}')
+            f'Several accounts with same name and same birth date ({df.loc[i, "Name"]}, {df.loc[i, "Vorname"]}), '
+            f'probably duplicated accounts => SKIPPED: {", ".join([u.primary_id for u in users_found])}')
         df.loc[i, 'skipped'] = True
-        df.loc[i, 'message'] = (f'Several accounts with same name and same birth date ({row["last_name"]}, '
-                                f'{row["first_name"]}), probably duplicated accounts => SKIPPED: '
+        df.loc[i, 'message'] = (f'Several accounts with same name and same birth date ({df.loc[i, "last_name"]}, '
+                                f'{df.loc[i, "first_name"]}), probably duplicated accounts => SKIPPED: '
                                 f'{", ".join([u.primary_id for u in users_found])}')
         return
 
     # No match case
     if len(users_found) == 0:
         logging.warning(
-            f'Match found with name {row["last_name"]}, {row["first_name"]}, '
-            f'but no match with birth date: looking for {row["birth_date"].strftime("%Y-%m-%d")} / '
+            f'Match found with name {df.loc[i, "last_name"]}, {df.loc[i, "first_name"]}, '
+            f'but no match with birth date: looking for {df.loc[i, "birth_date"].strftime("%Y-%m-%d")} / '
             f'found in alma accounts '
             f'{", ".join([u.primary_id + " (" + u.data["birth_date"][:-1] + ")" for u in users])}')
 
-        df.loc[i, 'message'] = (f'Match found with name {row["last_name"]}, {row["first_name"]}, '
-                                f'but no match with birth date: looking for {row["birth_date"].strftime("%Y-%m-%d")} / '
+        df.loc[i, 'message'] = (f'Match found with name {df.loc[i, "last_name"]}, {df.loc[i, "first_name"]}, '
+                                f'but no match with birth date: looking for'
+                                f'{df.loc[i, "birth_date"].strftime("%Y-%m-%d")} / '
                                 f'found in alma accounts '
                                 f'{", ".join([u.primary_id + " (" + u.data["birth_date"][:-1] + ")" for u in users])} '
                                 f'=> SKIPPED')
@@ -217,8 +239,9 @@ def check_user_barcode(user: User, barcode: str) -> bool:
 
 
 def clean_current_state_table_col_types(df_current_state: pd.DataFrame) -> pd.DataFrame:
-    """
-    Clean the data types of the current state table
+    """Clean the data types of the current state table
+
+    It fills the empty cells with the correct data type and replace 'nan' string with empty string.
 
     Parameters
     ----------
