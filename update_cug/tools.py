@@ -159,9 +159,12 @@ def send_report(reports: List[str]) -> None:
         List of reports to send
     """
 
+    # Concatenate reports
     reports = '\n\n****************\n\n'.join(reports)
 
     # At least one user group updated
     sendmail(config.REPORT_DESTINATION,
              'ABN CUG processes report',
              reports)
+
+    logging.info(f'Report sent to the recipient: {config.REPORT_DESTINATION}')

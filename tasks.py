@@ -100,6 +100,8 @@ reports = list()
 reports.append(update_mediotheken.workflow())
 reports.append(update_verwaltung.workflow())
 
+tools.send_report(reports)
+
 logging.info(f'Process ended at {datetime.now()}')
 
 # Encrypt the data
