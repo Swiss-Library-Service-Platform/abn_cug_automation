@@ -5,3 +5,4 @@ cryptography
 almapiwrapper
 lxml
 requests
+tabulate
