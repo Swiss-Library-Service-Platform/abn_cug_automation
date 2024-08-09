@@ -103,4 +103,4 @@ def update_report(primary_ids: List[str]) -> str:
 
     df.to_csv(config.PATH_TO_REPORT_VERWALTUNG, index=False)
 
-    return df.tail(5).to_string(index=False)
+    return df.tail(5).to_markdown(index=False)

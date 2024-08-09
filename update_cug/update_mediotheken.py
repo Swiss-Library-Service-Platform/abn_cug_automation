@@ -57,12 +57,12 @@ def workflow() -> str:
                 df_current_state.loc[i, 'barcode_added'] = check_user_barcode(user, df_current_state.loc[i, 'barcode'])
 
     # Write the report
-    write_report(df_current_state)
+    report = update_report(df_current_state)
 
     # Save the current state table
     tools.encrypt_data(df_current_state, config.PATH_TO_DATA_CURRENT_STATE)
 
-    return df_current_state.tail(5).to_string(index=False)
+    return report
 
 
 def reset_current_state_table() -> None:
@@ -257,13 +257,19 @@ def clean_current_state_table_col_types(df_current_state: pd.DataFrame) -> pd.Da
     return df_current_state
 
 
-def write_report(df_current_state: pd.DataFrame) -> None:
+def update_report(df_current_state: pd.DataFrame) -> str:
     """Write the report of the process in a file
 
     Parameters
     ----------
     df_current_state: pd.DataFrame
         DataFrame containing the report data
+
+    Returns
+    -------
+    str
+        string containing the report data
+
     """
     if os.path.isfile(config.PATH_TO_REPORT_MEDIOTHEKEN):
         df = pd.read_csv(config.PATH_TO_REPORT_MEDIOTHEKEN,
@@ -282,3 +288,5 @@ def write_report(df_current_state: pd.DataFrame) -> None:
                        'nb_users_skipped': len(df_current_state[df_current_state['skipped']])}
 
     df.to_csv(config.PATH_TO_REPORT_MEDIOTHEKEN, index=False)
+
+    return df.tail(5).to_markdown(index=False)
