@@ -40,6 +40,8 @@ A `.env` file is required to store the `abn_slsp_exchange_access` variable to ha
 repository of ABN.
 
 The library `almapiwrapper` is required to be installed with the required api keys configured.
+A library to send emails is also required (function `sendmail` in tools).
+
 The script needs API keys to access the Alma API:
 * Analytics
 * Users
