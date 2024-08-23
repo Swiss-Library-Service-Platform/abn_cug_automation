@@ -9,7 +9,7 @@ from io import BytesIO
 from typing import List
 
 # sendmail is a custom local package
-# from sendmail import sendmail
+from sendmail import sendmail
 
 
 def configure_logger() -> str:
