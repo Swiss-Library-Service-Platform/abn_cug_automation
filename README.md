@@ -48,4 +48,5 @@ The script needs API keys to access the Alma API:
 
 Configuration is to be defined in the `config.py` file.
 
-
+## License
+GNU General Public License v3.0
