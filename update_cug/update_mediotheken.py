@@ -170,7 +170,7 @@ def update_user_cug(i: int, df: pd.DataFrame) -> Optional[User]:
     # Multi matches case
     if len(users_found) > 1:
         logging.error(
-            f'Several accounts with same name and same birth date ({df.loc[i, "Name"]}, {df.loc[i, "Vorname"]}), '
+            f'Several accounts with same name and same birth date ({df.loc[i, "last_name"]}, {df.loc[i, "first_name"]}), '
             f'probably duplicated accounts => SKIPPED: {", ".join([u.primary_id for u in users_found])}')
         df.loc[i, 'skipped'] = True
         df.loc[i, 'message'] = (f'Several accounts with same name and same birth date ({df.loc[i, "last_name"]}, '
