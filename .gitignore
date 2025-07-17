@@ -1,4 +1,6 @@
 abn_slsp_exchange
+log
+nohup.out
 env
 .idea
 __pycache__
