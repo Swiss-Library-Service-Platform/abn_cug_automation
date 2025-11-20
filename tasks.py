@@ -64,6 +64,7 @@
 import logging
 from datetime import datetime
 import os
+import sys
 import dotenv
 import config
 import update_cug.tools as tools
@@ -77,6 +78,9 @@ os.chdir(
         os.path.abspath(__file__)
     )
 )
+FORCE_UPDATE_NZ = False
+if len(sys.argv) == 2 and sys.argv[1] == '--force-update-nz':
+    FORCE_UPDATE_NZ = True
 
 # Load environment variables with secrets to
 # access the git repository and to decrypt the data
@@ -97,7 +101,7 @@ logging.info(f'Starting process at {datetime.now()}')
 
 # Update CUGs of users
 reports = list()
-reports.append(update_mediotheken.workflow())
+reports.append(update_mediotheken.workflow(FORCE_UPDATE_NZ))
 reports.append(update_verwaltung.workflow())
 
 tools.send_report(reports)

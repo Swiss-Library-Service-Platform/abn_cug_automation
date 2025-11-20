@@ -8,9 +8,14 @@ from almapiwrapper.users import fetch_users, User
 from typing import Optional
 
 
-def workflow() -> str:
+def workflow(force_update_nz=False) -> str:
     """
     This function is the main workflow of the process to update the CUG of Mediotheken users.
+
+    Parameters
+    ----------
+    force_update_nz: bool
+        Force update of all users in nz or not
 
     Returns
     -------
@@ -132,7 +137,7 @@ def actualize_current_state_table(df_source: pd.DataFrame, df_current_state: pd.
     return df_current_state
 
 
-def update_user_cug(i: int, df: pd.DataFrame) -> Optional[User]:
+def update_user_cug(i: int, df: pd.DataFrame, force_update=False) -> Optional[User]:
     """This function fetch user and update it in the NZ. It check also the IZ
     user to know if it has already the new user group.
 
@@ -143,9 +148,15 @@ def update_user_cug(i: int, df: pd.DataFrame) -> Optional[User]:
 
     df: pd.DataFrame
         DataFrame containing the current state of the data from the last run.
+
+    force_update: bool
+        Force update of all users in the NZ
     """
 
     # This user is already fully processed => skip it
+    if force_update and pd.notnull(df.loc[i, 'primary_id']) and '@' in df.loc[i, 'primary_id']:
+        User(df.loc[i, 'primary_id'], zone='NZ').update()
+
     if df.loc[i, 'cug_updated']:
         logging.info(f'{i + 1} / {len(df)}: SKIPPED {df.loc[i, "barcode"]}')
         return
