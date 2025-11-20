@@ -208,13 +208,14 @@ def update_user_cug(i: int, df: pd.DataFrame) -> Optional[User]:
         # Update the user group
         user_iz.data['user_group']['value'] = config.MEDIOTHEK_USER_GROUP_CODE
         user_iz.update(override=['user_group'])
+        user_nz = User(primary_id, 'NZ').update()
 
-        if user_iz.error is False:
+        if user_iz.error is False and user_nz.error is False:
             logging.info(f'{user_iz.primary_id}: user group updated to "{config.MEDIOTHEK_USER_GROUP_CODE}"')
             df.loc[i, 'cug_updated'] = True
             return user_iz
         else:
-            logging.error(f'{user_iz.primary_id}: error updating user group')
+            logging.error(f'{user_iz.primary_id}: error updating user group (NZ: {user_nz.error} / IZ: {user_iz.error})')
             df.loc[i, 'message'] = 'Error updating user group'
             return
 
