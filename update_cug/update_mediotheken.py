@@ -50,7 +50,7 @@ def workflow(force_update_nz=False) -> str:
     for i, _ in df_current_state.iterrows():
 
         # Check CUG of the user
-        user = update_user_cug(i, df_current_state)
+        user = update_user_cug(i, df_current_state, force_update_nz)
 
         # Check barcode for users, who have already the new CUG, but no barcode
         if not df_current_state.loc[i, 'barcode_added'] and df_current_state.loc[i, 'cug_updated']:
@@ -137,7 +137,7 @@ def actualize_current_state_table(df_source: pd.DataFrame, df_current_state: pd.
     return df_current_state
 
 
-def update_user_cug(i: int, df: pd.DataFrame, force_update=False) -> Optional[User]:
+def update_user_cug(i: int, df: pd.DataFrame, force_update_nz=False) -> Optional[User]:
     """This function fetch user and update it in the NZ. It check also the IZ
     user to know if it has already the new user group.
 
@@ -149,12 +149,12 @@ def update_user_cug(i: int, df: pd.DataFrame, force_update=False) -> Optional[Us
     df: pd.DataFrame
         DataFrame containing the current state of the data from the last run.
 
-    force_update: bool
+    force_update_nz: bool
         Force update of all users in the NZ
     """
 
     # This user is already fully processed => skip it
-    if force_update and pd.notnull(df.loc[i, 'primary_id']) and '@' in df.loc[i, 'primary_id']:
+    if force_update_nz and pd.notnull(df.loc[i, 'primary_id']) and '@' in df.loc[i, 'primary_id']:
         User(df.loc[i, 'primary_id'], zone='NZ').update()
 
     if df.loc[i, 'cug_updated']:
