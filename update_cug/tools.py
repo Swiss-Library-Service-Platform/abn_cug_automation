@@ -9,7 +9,7 @@ from io import BytesIO
 from typing import List
 
 # sendmail is a custom local package
-from sendmail import sendmail
+# from sendmail import sendmail
 
 
 def configure_logger() -> str:
@@ -150,21 +150,58 @@ def strtodate(txt: str) -> datetime:
     return datetime.strptime(txt, '%Y-%m-%dZ')
 
 
-def send_report(reports: List[str]) -> None:
-    """Send an email with the report attached
+def create_report(reports: List[str]) -> None:
+    """
+    Create a text report in the 'reports' folder. If the file already exists, add a suffix and increment the number.
 
     Parameters
     ----------
-    reports: List[str]
-        List of reports to send
+    reports : List[str]
+        List of report strings to concatenate and write to the report file.
     """
+    # Concatenate the reports
+    reports_content = '\n\n****************\n\n'.join(reports)
 
-    # Concatenate reports
-    reports = '\n\n****************\n\n'.join(reports)
+    # Create the 'reports' directory if it does not exist
+    reports_dir = 'reports'
+    if not os.path.exists(reports_dir):
+        os.makedirs(reports_dir)
 
-    # At least one user group updated
-    sendmail(config.REPORT_DESTINATION,
-             'ABN CUG processes report',
-             reports)
+    # Generate the base report filename
+    base_name = f'report_cug_update_{date.today().isoformat()}'
+    ext = '.txt'
+    report_name = f'{base_name}{ext}'
+    report_path = os.path.join(reports_dir, report_name)
 
-    logging.info(f'Report sent to the recipient: {config.REPORT_DESTINATION}')
+    # If the file already exists, add a numeric suffix
+    counter = 1
+    while os.path.exists(report_path):
+        report_name = f'{base_name}_{counter}{ext}'
+        report_path = os.path.join(reports_dir, report_name)
+        counter += 1
+
+    # Write the report content to the file
+    with open(report_path, 'w', encoding='utf-8') as report_file:
+        report_file.write(reports_content)
+
+    logging.info(f'Report created at: {report_path}')
+
+
+# def send_report(reports: List[str]) -> None:
+#     """Send an email with the report attached
+#
+#     Parameters
+#     ----------
+#     reports: List[str]
+#         List of reports to send
+#     """
+#
+#     # Concatenate reports
+#     reports = '\n\n****************\n\n'.join(reports)
+#
+#     # At least one user group updated
+#     sendmail(config.REPORT_DESTINATION,
+#              'ABN CUG processes report',
+#              reports)
+#
+#     logging.info(f'Report sent to the recipient: {config.REPORT_DESTINATION}')

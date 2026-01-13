@@ -104,7 +104,7 @@ reports = list()
 reports.append(update_mediotheken.workflow(FORCE_UPDATE_NZ))
 reports.append(update_verwaltung.workflow())
 
-tools.send_report(reports)
+tools.create_report(reports)
 
 logging.info(f'Process ended at {datetime.now()}')
 

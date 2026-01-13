@@ -35,12 +35,16 @@ To start the script:
 python3 task.py
 ```
 
+To force update all NZ accounts and to trigger the webhook, use `--force-update-nz` parameter. 
+```bash
+python3 task.py --force-update-nz
+```
+
 ## Installation
 A `.env` file is required to store the `abn_slsp_exchange_access` variable to have access to the git
 repository of ABN.
 
 The library `almapiwrapper` is required to be installed with the required api keys configured.
-A library to send emails is also required (function `sendmail` in tools).
 
 The script needs API keys to access the Alma API:
 * Analytics
