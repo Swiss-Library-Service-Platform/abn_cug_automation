@@ -101,8 +101,8 @@ logging.info(f'Starting process at {datetime.now()}')
 
 # Update CUGs of users
 reports = list()
-reports.append(update_mediotheken.workflow(FORCE_UPDATE_NZ))
-reports.append(update_verwaltung.workflow())
+reports.append('## Update Mediotheken CUG\n\n' + update_mediotheken.workflow(FORCE_UPDATE_NZ))
+reports.append('## Update Verwaltung CUG\n\n' + update_verwaltung.workflow())
 
 tools.create_report(reports)
 

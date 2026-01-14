@@ -160,7 +160,7 @@ def create_report(reports: List[str]) -> None:
         List of report strings to concatenate and write to the report file.
     """
     # Concatenate the reports
-    reports_content = '\n\n****************\n\n'.join(reports)
+    reports_content = f'# CUG update {date.today().isoformat()}\n\n' + '\n\n***\n\n'.join(reports) + '\n'
 
     # Create the 'reports' directory if it does not exist
     reports_dir = 'reports'
@@ -169,7 +169,7 @@ def create_report(reports: List[str]) -> None:
 
     # Generate the base report filename
     base_name = f'report_cug_update_{date.today().isoformat()}'
-    ext = '.txt'
+    ext = '.md'
     report_name = f'{base_name}{ext}'
     report_path = os.path.join(reports_dir, report_name)
 
