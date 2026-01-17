@@ -6,6 +6,7 @@ import logging
 from datetime import date
 from almapiwrapper.users import fetch_users, User
 from typing import Optional
+from pymongo import MongoClient
 
 
 def workflow(force_update_nz=False) -> str:
@@ -293,11 +294,21 @@ def update_report(df_current_state: pd.DataFrame) -> str:
     else:
         df = pd.DataFrame(columns=['date', 'nb_users', 'nb_users_updated', 'nb_barcode_added', 'nb_users_skipped'])
 
-    df.loc[len(df)] = {'date': date.today().isoformat(),
-                       'nb_users': len(df_current_state),
-                       'nb_users_updated': len(df_current_state[df_current_state['cug_updated']]),
-                       'nb_barcode_added': len(df_current_state[df_current_state['barcode_added']]),
-                       'nb_users_skipped': len(df_current_state[df_current_state['skipped']])}
+    row = {'date': date.today().isoformat(),
+           'nb_users': len(df_current_state),
+           'nb_users_updated': len(df_current_state[df_current_state['cug_updated']]),
+           'nb_barcode_added': len(df_current_state[df_current_state['barcode_added']]),
+           'nb_users_skipped': len(df_current_state[df_current_state['skipped']])}
+
+    df.loc[len(df)] = row
+
+    client = MongoClient(os.getenv('MONGODB_URI'))
+    db = client['automated_processes']
+    collection = db['abn_cug_mediotheken']
+    if collection.count_documents({'date': row['date']}) == 0:
+        collection.insert_one(row)
+
+    client.close()
 
     df.to_csv(config.PATH_TO_REPORT_MEDIOTHEKEN, index=False)
 

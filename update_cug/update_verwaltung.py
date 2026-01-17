@@ -5,6 +5,7 @@ import os
 from almapiwrapper.analytics import AnalyticsReport
 from almapiwrapper.users import User
 import config
+from pymongo import MongoClient
 
 
 def workflow() -> str:
@@ -98,9 +99,19 @@ def update_report(primary_ids: List[str]) -> str:
     else:
         df = pd.DataFrame(columns=['date', 'nb_new_users'])
 
-    df.loc[len(df)] = {'date': date.today().isoformat(),
-                       'nb_new_users': len(primary_ids)}
+    row = {'date': date.today().isoformat(),
+           'nb_new_users': len(primary_ids)}
+
+    df.loc[len(df)] = row
 
     df.to_csv(config.PATH_TO_REPORT_VERWALTUNG, index=False)
+
+    client = MongoClient(os.getenv('MONGODB_URI'))
+    db = client['automated_processes']
+    collection = db['abn_cug_verwaltung']
+    if collection.count_documents({'date': row['date']}) == 0:
+        collection.insert_one(row)
+
+    client.close()
 
     return df.tail(5).to_markdown(index=False)
