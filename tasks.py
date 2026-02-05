@@ -65,7 +65,7 @@ import logging
 from datetime import datetime
 import os
 import sys
-import dotenv
+from dotenv import load_dotenv
 import config
 import update_cug.tools as tools
 from update_cug.gitrepo import GitRepo
@@ -84,7 +84,9 @@ if len(sys.argv) == 2 and sys.argv[1] == '--force-update-nz':
 
 # Load environment variables with secrets to
 # access the git repository and to decrypt the data
-dotenv.load_dotenv()
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
 os.environ['GIT_SSL_NO_VERIFY'] = 'true'
 
 repo = GitRepo(
