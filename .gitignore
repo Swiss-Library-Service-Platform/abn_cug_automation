@@ -2,6 +2,7 @@ abn_slsp_exchange
 log
 nohup.out
 env
+.venv
 .idea
 __pycache__
 .env

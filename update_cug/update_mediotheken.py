@@ -305,7 +305,7 @@ def update_report(df_current_state: pd.DataFrame) -> str:
     client = MongoClient(os.getenv('MONGODB_URI'))
     db = client['automated_processes']
     collection = db['abn_cug_mediotheken']
-    if collection.count_documents({'date': row['date']}) == 0:
+    if collection.count_documents({'DATE': row['date']}) == 0:
         collection.insert_one(row)
 
     client.close()
