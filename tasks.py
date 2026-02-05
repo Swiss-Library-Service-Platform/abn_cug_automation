@@ -84,7 +84,7 @@ if len(sys.argv) == 2 and sys.argv[1] == '--force-update-nz':
 
 # Load environment variables with secrets to
 # access the git repository and to decrypt the data
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 load_dotenv(dotenv_path)
 
 os.environ['GIT_SSL_NO_VERIFY'] = 'true'

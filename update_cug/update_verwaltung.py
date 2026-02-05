@@ -6,6 +6,7 @@ from almapiwrapper.analytics import AnalyticsReport
 from almapiwrapper.users import User
 import config
 from pymongo import MongoClient
+from datetime import datetime
 
 
 def workflow() -> str:
@@ -109,8 +110,8 @@ def update_report(primary_ids: List[str]) -> str:
     client = MongoClient(os.getenv('MONGODB_URI'))
     db = client['automated_processes']
     collection = db['abn_cug_verwaltung']
-    if collection.count_documents({'date': row['date']}) == 0:
-        collection.insert_one(row)
+    row['TIMESTAMP'] = datetime.now()
+    collection.insert_one(row)
 
     client.close()
 

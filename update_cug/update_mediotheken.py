@@ -3,7 +3,7 @@ from update_cug import tools
 import pandas as pd
 import config
 import logging
-from datetime import date
+from datetime import date, datetime
 from almapiwrapper.users import fetch_users, User
 from typing import Optional
 from pymongo import MongoClient
@@ -305,8 +305,8 @@ def update_report(df_current_state: pd.DataFrame) -> str:
     client = MongoClient(os.getenv('MONGODB_URI'))
     db = client['automated_processes']
     collection = db['abn_cug_mediotheken']
-    if collection.count_documents({'DATE': row['date']}) == 0:
-        collection.insert_one(row)
+    row['TIMESTAMP'] = datetime.now()
+    collection.insert_one(row)
 
     client.close()
 
