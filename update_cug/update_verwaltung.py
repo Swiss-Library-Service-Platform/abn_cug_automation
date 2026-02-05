@@ -99,8 +99,8 @@ def update_report(primary_ids: List[str]) -> str:
     else:
         df = pd.DataFrame(columns=['date', 'nb_new_users'])
 
-    row = {'date': date.today().isoformat(),
-           'nb_new_users': len(primary_ids)}
+    row = {'DATE': date.today().isoformat(),
+           'SUCCESS': len(primary_ids)}
 
     df.loc[len(df)] = row
 

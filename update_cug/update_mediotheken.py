@@ -294,7 +294,7 @@ def update_report(df_current_state: pd.DataFrame) -> str:
     else:
         df = pd.DataFrame(columns=['date', 'nb_users', 'nb_users_updated', 'nb_barcode_added', 'nb_users_skipped'])
 
-    row = {'date': date.today().isoformat(),
+    row = {'DATE': date.today().isoformat(),
            'nb_users': len(df_current_state),
            'nb_users_updated': len(df_current_state[df_current_state['cug_updated']]),
            'nb_barcode_added': len(df_current_state[df_current_state['barcode_added']]),
