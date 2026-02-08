@@ -92,12 +92,16 @@ def update_report(primary_ids: List[str]) -> str:
     str
         string containing the report data
     """
+    try:
+        if os.path.isfile(config.PATH_TO_REPORT_VERWALTUNG):
+            df = pd.read_csv(config.PATH_TO_REPORT_VERWALTUNG,
+                             dtype={'DATE': str,
+                                    'SUCCESS': int})
 
-    if os.path.isfile(config.PATH_TO_REPORT_VERWALTUNG):
-        df = pd.read_csv(config.PATH_TO_REPORT_VERWALTUNG,
-                         dtype={'DATE': str,
-                                'SUCCESS': int})
-    else:
+        else:
+            df = pd.DataFrame(columns=['DATE', 'SUCCESS'])
+
+    except ValueError:
         df = pd.DataFrame(columns=['DATE', 'SUCCESS'])
 
     row = {'DATE': date.today().isoformat(),

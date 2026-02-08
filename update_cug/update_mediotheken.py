@@ -285,12 +285,15 @@ def update_report(df_current_state: pd.DataFrame) -> str:
 
     """
     if os.path.isfile(config.PATH_TO_REPORT_MEDIOTHEKEN):
-        df = pd.read_csv(config.PATH_TO_REPORT_MEDIOTHEKEN,
-                         dtype={'DATE': str,
-                                'nb_users': int,
-                                'nb_users_updated': int,
-                                'nb_barcode_added': int,
-                                'nb_users_skipped': int})
+        try:
+            df = pd.read_csv(config.PATH_TO_REPORT_MEDIOTHEKEN,
+                             dtype={'DATE': str,
+                                    'nb_users': int,
+                                    'nb_users_updated': int,
+                                    'nb_barcode_added': int,
+                                    'nb_users_skipped': int})
+        except ValueError:
+            df = pd.DataFrame(columns=['DATE', 'nb_users', 'nb_users_updated', 'nb_barcode_added', 'nb_users_skipped'])
     else:
         df = pd.DataFrame(columns=['DATE', 'nb_users', 'nb_users_updated', 'nb_barcode_added', 'nb_users_skipped'])
 
