@@ -171,6 +171,12 @@ def update_user_cug(i: int, df: pd.DataFrame, force_update_nz=False) -> Optional
                          f'and first_name~{df.loc[i, "first_name"].replace(" ", "_")}',
                          zone=config.IZ)
              if u.primary_id.endswith('eduid.ch')]
+    for u in users:
+        _ = u.data
+        if u.error:
+            logging.error(f'{u.primary_id}: error fetching user data: {u.error}')
+
+    users = [u for u in users if u.error is False]
 
     if len(users) == 0:
         logging.warning(f'No match found with name {df.loc[i, "last_name"]}, {df.loc[i, "first_name"]}')
